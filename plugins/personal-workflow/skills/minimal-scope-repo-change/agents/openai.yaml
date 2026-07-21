@@ -1,0 +1,4 @@
+interface:
+  display_name: "Minimal-Scope Repo Change"
+  short_description: "Make narrow repo changes with real verification."
+  default_prompt: "Implement this with the smallest repo-appropriate change and verify using the project real commands."

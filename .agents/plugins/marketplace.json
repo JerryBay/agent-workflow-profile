@@ -1,0 +1,20 @@
+{
+  "name": "codex-workflow-profile",
+  "interface": {
+    "displayName": "Codex Workflow Profile"
+  },
+  "plugins": [
+    {
+      "name": "personal-workflow",
+      "source": {
+        "source": "local",
+        "path": "./plugins/personal-workflow"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

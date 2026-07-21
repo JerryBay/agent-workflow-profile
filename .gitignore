@@ -1,0 +1,7 @@
+.codex/
+.idea/
+.vscode/
+*.backup-*
+*.tmp
+Thumbs.db
+Desktop.ini
