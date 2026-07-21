@@ -1,6 +1,6 @@
 ---
 name: evidence-first-local-debugging
-description: Use when diagnosing bugs, crashes, debugger issues, missing symbols, broken reopen/save behavior, screenshot prompts, runtime path problems, or user asks for cause without code changes in a local repo.
+description: Use when diagnosing bugs, crashes, debugger issues, missing symbols, broken reopen/save behavior, screenshot prompts, runtime path problems, repository-wide technical investigations, or requests for cause, count, or classification without code changes in a local repo.
 ---
 
 # Evidence-First Local Debugging
@@ -18,6 +18,12 @@ Diagnose from the current local evidence before proposing fixes. Memory and gene
 5. Answer with the exact anchors that matter: file/function, project setting, command, module, resource path, breakpoint, call stack, pointer/value comparison, or persistence hook.
 6. If the user asked for no changes, explicitly state that no files or environment settings were modified.
 
+## Repository-Wide Investigations
+
+Before a broad search, define the unit of analysis, inclusion scope, exclusion scope, categories, and counting rules. Then verify real creation, use, ownership, and shutdown sites instead of treating text matches as independent mechanisms.
+
+Summarize the result as a small mechanism table, decision-oriented classification, or conditional count. Keep raw search output as evidence, not as the answer.
+
 ## Read-Only Boundary
 
 When the user says "read-only", asks only for the cause, asks not to change code or environment, or asks whether anything was changed:
@@ -34,3 +40,5 @@ When the user says "read-only", asks only for the cause, asks not to change code
 | Treating a visible UI state as persisted state | Trace save, reopen, copy, replay, or serialization hooks |
 | Explaining a graph or render issue as one flat dump | Group by functional subgraph or render stage |
 | Starting a broad repo search for a debugger question | Start from the configured startup project and runtime directory |
+| Counting every search match as a distinct mechanism | Define inclusion, exclusion, and counting rules, then verify the owning implementation |
+| Returning grep output instead of a conclusion | Collapse evidence into categories, counts, conditions, and exact anchors |

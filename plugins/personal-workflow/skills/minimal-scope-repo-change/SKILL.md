@@ -11,14 +11,15 @@ Make the smallest repo-appropriate change that satisfies the request, then verif
 
 ## Workflow
 
-1. Read the nearby code and ownership boundaries before editing.
-2. Identify the module, node, command, component, or subsystem that already owns similar behavior.
-3. Keep changes local to that ownership area unless the evidence shows a shared contract must change.
-4. Prefer existing helpers, conventions, config formats, and test style.
-5. Avoid unrelated refactors, metadata churn, broad rewrites, and speculative abstractions.
-6. Protect user work: do not revert unrelated dirty files or edits you did not make.
-7. Verify with the narrowest meaningful command: focused test, target build, runtime repro, or UI path.
-8. Report changed files, verification command, and any residual risk.
+1. Establish the task mode, requirement boundary, and relevant acceptance level before editing.
+2. Read the nearby code and ownership boundaries.
+3. Identify the module, node, command, component, or subsystem that already owns similar behavior.
+4. Keep changes local to that ownership area unless the evidence shows a shared contract must change.
+5. Prefer existing helpers, conventions, config formats, and test style.
+6. Avoid unrelated refactors, metadata churn, broad rewrites, and speculative abstractions.
+7. Protect user work: do not revert unrelated dirty files or edits you did not make.
+8. Verify with the narrowest meaningful command that reaches the required acceptance level.
+9. Report changed files, verification evidence, unverified behavior, and residual risk.
 
 ## Placement Heuristics
 
@@ -29,6 +30,19 @@ Make the smallest repo-appropriate change that satisfies the request, then verif
 | Should config be added? | Use existing config when present; otherwise prefer a small user-tunable default over hardcoded assumptions |
 | Should values be normalized or clamped? | Preserve original semantics unless the user requested normalization or evidence proves it is required |
 
-## Verification
+## Verification Ladder
 
-Do not claim the change is complete from inspection alone. If the real full build is blocked by existing workspace issues, run the narrow viable command and state the limitation.
+Choose the required levels before implementation. Run only the levels relevant to the request, but do not imply that a lower level proves a higher one.
+
+| Level | Evidence |
+| --- | --- |
+| Inspection | Current diff, call path, ownership, or configuration is understood |
+| Build | The affected target compiles or type-checks |
+| Focused tests | The smallest relevant automated tests pass |
+| Runtime | The real executable, process, logs, or reproduction path confirms behavior |
+| Visible result | UI state, rendering, output, or user-visible behavior matches the acceptance criteria |
+| Persistence | Reopen, restart, replay, or a fresh shell/session preserves the intended state |
+
+## Completion Reporting
+
+Separate implemented, verified, and unverified work. If the full acceptance path is blocked by existing workspace issues, run the narrow viable command and state the exact limitation.

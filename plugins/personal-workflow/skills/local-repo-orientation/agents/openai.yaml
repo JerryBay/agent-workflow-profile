@@ -1,0 +1,4 @@
+interface:
+  display_name: "Local Repo Orientation"
+  short_description: "Reconstruct an unfamiliar checkout from local evidence."
+  default_prompt: "Orient me in this checkout using current local evidence, including entrypoints, implemented baseline, unverified behavior, and the next task."

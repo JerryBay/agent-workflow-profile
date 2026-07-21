@@ -1,4 +1,4 @@
 interface:
   display_name: "Design-First Project Planning"
-  short_description: "Discuss requirements before implementation."
-  default_prompt: "Discuss this feature first, keep the requirement document current, and do not start implementation until the design is agreed."
+  short_description: "Resolve requirements and acceptance before coding."
+  default_prompt: "Discuss this feature first, maintain the decision log and acceptance criteria, and do not start implementation until the design is agreed."

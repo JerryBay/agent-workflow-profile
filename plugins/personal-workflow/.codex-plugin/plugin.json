@@ -1,7 +1,7 @@
 {
   "name": "personal-workflow",
-  "version": "0.1.0",
-  "description": "Portable personal Codex workflows for evidence-first diagnosis, minimal repo changes, design-first planning, and Windows GUI development tools.",
+  "version": "0.2.0",
+  "description": "Portable personal Codex workflows for evidence-first diagnosis, local repo orientation, minimal changes, explicit acceptance, design-first planning, and Windows GUI development tools.",
   "author": {
     "name": "Personal Codex Profile"
   },
@@ -9,7 +9,7 @@
   "interface": {
     "displayName": "Personal Workflow",
     "shortDescription": "Use consistent personal engineering workflows across projects.",
-    "longDescription": "Applies evidence-first diagnosis, strict read-only boundaries, minimal ownership-aware changes, design-first planning, and concrete Windows GUI navigation.",
+    "longDescription": "Applies evidence-first diagnosis, local checkout orientation, strict read-only boundaries, minimal ownership-aware changes, explicit acceptance, design-first planning, and concrete Windows GUI navigation.",
     "developerName": "Personal Codex Profile",
     "category": "Productivity",
     "capabilities": [],

@@ -2,7 +2,8 @@
 param(
     [switch]$SkipAgents,
     [switch]$SkipPlugin,
-    [switch]$RefreshPlugin
+    [switch]$RefreshPlugin,
+    [switch]$ValidateOnly
 )
 
 $ErrorActionPreference = "Stop"
@@ -11,6 +12,14 @@ $repoRoot = $PSScriptRoot
 $marketplaceName = "codex-workflow-profile"
 $pluginName = "personal-workflow"
 $pluginSelector = "$pluginName@$marketplaceName"
+$validator = Join-Path $repoRoot "scripts\validate-profile.ps1"
+
+& $validator -Root $repoRoot
+
+if ($ValidateOnly) {
+    Write-Host "Validation completed. No user configuration was changed."
+    return
+}
 
 if (-not $SkipAgents) {
     $codexDir = Join-Path $env:USERPROFILE ".codex"
