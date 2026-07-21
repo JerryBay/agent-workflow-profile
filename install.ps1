@@ -37,14 +37,13 @@ if (-not $SkipPlugin) {
         Where-Object { $_.name -eq $marketplaceName }
 
     if ($marketplaceExists) {
-        & $codexCommand.Source plugin marketplace upgrade $marketplaceName --json
+        Write-Host "Marketplace '$marketplaceName' is already registered."
     }
     else {
         & $codexCommand.Source plugin marketplace add $repoRoot --json
-    }
-
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to register or refresh marketplace '$marketplaceName'."
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to register marketplace '$marketplaceName'."
+        }
     }
 
     $pluginState = (& $codexCommand.Source plugin list --json | Out-String | ConvertFrom-Json)
@@ -52,9 +51,9 @@ if (-not $SkipPlugin) {
     $pluginInstalled = $installedJson -match [regex]::Escape($pluginName)
 
     if ($pluginInstalled -and $RefreshPlugin) {
-        & $codexCommand.Source plugin remove $pluginName
+        & $codexCommand.Source plugin remove $pluginSelector --json
         if ($LASTEXITCODE -ne 0) {
-            throw "Failed to remove the existing '$pluginName' plugin."
+            throw "Failed to remove the existing '$pluginSelector' plugin."
         }
         $pluginInstalled = $false
     }

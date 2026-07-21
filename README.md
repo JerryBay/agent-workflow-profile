@@ -38,7 +38,7 @@ git pull
 .\install.ps1 -RefreshPlugin
 ```
 
-`-RefreshPlugin` 会重新安装插件缓存。脚本仍会先刷新 marketplace，并备份已有全局规则。
+`-RefreshPlugin` 会从已注册的本地 marketplace 重新安装插件缓存，并备份已有全局规则。
 
 ## 安全边界
 
