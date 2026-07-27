@@ -1,4 +1,4 @@
 interface:
   display_name: "Local Repo Orientation"
   short_description: "Reconstruct an unfamiliar checkout from local evidence."
-  default_prompt: "Orient me in this checkout using current local evidence, including entrypoints, implemented baseline, unverified behavior, and the next task."
+  default_prompt: "Use $local-repo-orientation to reconstruct this checkout from current local evidence, including entrypoints, baseline, unverified behavior, and the next task."

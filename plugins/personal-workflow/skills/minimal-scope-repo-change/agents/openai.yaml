@@ -1,4 +1,4 @@
 interface:
   display_name: "Minimal-Scope Repo Change"
   short_description: "Make narrow repo changes with explicit acceptance."
-  default_prompt: "Implement this with the smallest repo-appropriate change, define the required acceptance level, and verify it using the project's real commands."
+  default_prompt: "Use $minimal-scope-repo-change to implement this with the smallest design-correct change and verify it using the project's real commands."

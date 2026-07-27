@@ -85,11 +85,28 @@ function Invoke-ProfileValidator {
 Assert-FileContains "AGENTS.md" "mode, goal, boundaries, and acceptance criteria" "Task contract"
 Assert-FileContains "AGENTS.md" "implemented, verified, and unverified" "Completion-state separation"
 Assert-FileContains "AGENTS.md" "single-agent" "Delegation threshold"
+Assert-FileContains "AGENTS.md" "evidence-backed, reversible work" "Autonomous-action threshold"
+Assert-FileContains "AGENTS.md" "high cohesion, low coupling" "Architecture preference"
+Assert-FileContains "AGENTS.md" "observed facts, inferences, assumptions, and unknowns" "Uncertainty reporting"
+Assert-FileContains "AGENTS.md" "outcome in plain language" "Communication preference"
+Assert-FileContains "AGENTS.md" "briefly explain terms that are outside the user's field" "Terminology explanation preference"
 
 $minimalSkill = "plugins\personal-workflow\skills\minimal-scope-repo-change\SKILL.md"
 Assert-FileContains $minimalSkill "Verification Ladder" "Verification ladder"
 Assert-FileContains $minimalSkill "runtime" "Runtime verification"
 Assert-FileContains $minimalSkill "persistence" "Persistence verification"
+Assert-FileContains $minimalSkill "fewest-line patch" "Design-correct minimum"
+Assert-FileContains $minimalSkill "data structure" "Data-structure checkpoint"
+Assert-FileContains $minimalSkill "performance" "Performance checkpoint"
+
+$architectureRoot = "plugins\personal-workflow\skills\architecture-aware-development"
+Assert-PathExists "$architectureRoot\SKILL.md" "Architecture-aware development skill"
+Assert-PathExists "$architectureRoot\agents\openai.yaml" "Architecture-aware development metadata"
+Assert-FileContains "$architectureRoot\SKILL.md" "cohesive ownership" "Architecture ownership rule"
+Assert-FileContains "$architectureRoot\SKILL.md" "dominant reads, writes, lookups" "Data-structure design rule"
+Assert-FileContains "$architectureRoot\SKILL.md" "Measure representative behavior" "Evidence-based performance rule"
+Assert-FileContains "$architectureRoot\SKILL.md" "hypothetical futures" "Over-engineering guardrail"
+Assert-FileContains "$architectureRoot\agents\openai.yaml" '\$architecture-aware-development' "Architecture skill default prompt"
 
 $designSkill = "plugins\personal-workflow\skills\design-first-project-planning\SKILL.md"
 foreach ($section in @("Confirmed", "Rejected", "Open", "Evidence", "Next validation")) {
@@ -106,8 +123,9 @@ Assert-PathExists "$orientationRoot\SKILL.md" "Local repo orientation skill"
 Assert-PathExists "$orientationRoot\agents\openai.yaml" "Local repo orientation metadata"
 Assert-PathExists "$orientationRoot\assets\project-entry-card.md" "Project entry card template"
 Assert-FileContains "README.md" "local-repo-orientation" "README skill inventory"
+Assert-FileContains "README.md" "architecture-aware-development" "README architecture skill inventory"
 
-Assert-FileContains "plugins\personal-workflow\.codex-plugin\plugin.json" '"version"\s*:\s*"0\.2\.0"' "Plugin version"
+Assert-FileContains "plugins\personal-workflow\.codex-plugin\plugin.json" '"version"\s*:\s*"0\.3\.0"' "Plugin version"
 Assert-PathExists "scripts\validate-profile.ps1" "Profile validator"
 Assert-FileContains "install.ps1" "ValidateOnly" "Validation-only install mode"
 
@@ -129,6 +147,16 @@ if (Test-Path -LiteralPath $validatorPath) {
         Remove-Item -LiteralPath $metadataPath -Force
         if ((Invoke-ProfileValidator -Root $missingMetadata) -eq 0) {
             Add-Failure "Validator accepted a skill without agents/openai.yaml"
+        }
+
+        $wrongPrompt = Copy-ProfileFixture -Name "wrong-prompt"
+        $fixtureRoots.Add($wrongPrompt)
+        $metadataPath = Join-Path $wrongPrompt "$architectureRoot\agents\openai.yaml"
+        $metadataContent = Get-Content -LiteralPath $metadataPath -Raw -Encoding UTF8
+        $metadataContent = $metadataContent -replace '\$architecture-aware-development', '$different-skill'
+        Set-Content -LiteralPath $metadataPath -Value $metadataContent -Encoding UTF8
+        if ((Invoke-ProfileValidator -Root $wrongPrompt) -eq 0) {
+            Add-Failure "Validator accepted a skill default_prompt without its skill token"
         }
 
         $absolutePath = Copy-ProfileFixture -Name "absolute-path"

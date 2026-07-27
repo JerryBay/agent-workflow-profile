@@ -1,4 +1,4 @@
 interface:
   display_name: "Evidence-First Local Debugging"
   short_description: "Diagnose and classify from local evidence first."
-  default_prompt: "Diagnose or classify this from the current local repo, runtime state, logs, debugger output, or screenshot before proposing fixes or counts."
+  default_prompt: "Use $evidence-first-local-debugging to diagnose or classify this from current local evidence before proposing fixes or counts."

@@ -1,4 +1,4 @@
 interface:
   display_name: "Windows GUI Dev Workflow"
   short_description: "Answer Windows GUI tooling questions with concrete UI paths."
-  default_prompt: "Help with this Visual Studio, Fork, P4V, Docker Desktop, or Windows GUI workflow using the visible UI and exact navigation paths."
+  default_prompt: "Use $windows-gui-dev-workflow to help with this Windows development GUI task using the visible UI and exact navigation paths."

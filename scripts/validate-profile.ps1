@@ -120,6 +120,19 @@ foreach ($skillDirectory in $skillDirectories) {
             throw "Skill '$($skillDirectory.Name)' metadata is missing '$key'."
         }
     }
+
+    $defaultPromptMatch = [regex]::Match(
+        $metadata,
+        '(?m)^\s*default_prompt:\s*"(?<value>[^"]+)"\s*$'
+    )
+    if (-not $defaultPromptMatch.Success) {
+        throw "Skill '$($skillDirectory.Name)' metadata requires a quoted default_prompt."
+    }
+
+    $requiredSkillToken = '$' + $skillDirectory.Name
+    if ($defaultPromptMatch.Groups['value'].Value -notmatch [regex]::Escape($requiredSkillToken)) {
+        throw "Skill '$($skillDirectory.Name)' default_prompt must mention '$requiredSkillToken'."
+    }
 }
 
 $portableFiles = [System.Collections.Generic.List[string]]::new()

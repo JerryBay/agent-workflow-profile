@@ -9,6 +9,7 @@
 - `evidence-first-local-debugging`：从真实本地证据开始诊断，并严格尊重只读边界。
 - `local-repo-orientation`：在新电脑或陌生 checkout 中重新确认入口、当前基线、未验证项和下一步。
 - `minimal-scope-repo-change`：按现有所有权做最小改动，并明确实际达到的验收层级。
+- `architecture-aware-development`：在开发和重构中平衡高内聚低耦合、数据结构、性能风险与适度设计。
 - `design-first-project-planning`：用户要求先讨论时，维护决策记录和验收标准，再进入实现。
 - `windows-gui-dev-workflow`：Visual Studio、Fork、P4V、Docker Desktop 等 GUI 工具优先给出具体界面路径。
 

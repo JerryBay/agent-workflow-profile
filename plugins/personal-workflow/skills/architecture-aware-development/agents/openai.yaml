@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architecture-Aware Development"
+  short_description: "Balance architecture, data, and performance."
+  default_prompt: "Use $architecture-aware-development to implement this feature with proportionate architecture, data structure, and performance decisions."
