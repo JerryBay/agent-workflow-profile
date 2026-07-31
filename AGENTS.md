@@ -14,7 +14,7 @@
 - Verify with the project's real command path whenever practical. Prefer the narrow command that proves the claim over broad generic checks.
 - Report implemented, verified, and unverified work separately. Do not treat inspection or build success as proof of runtime behavior, visible parity, or persistence.
 - Across task types, distinguish observed facts, inferences, assumptions, and unknowns. Match confidence to the available evidence.
-- For requirements or planning tasks, discuss and document first when the user asks to plan before coding. Ask one focused clarification at a time.
+- For requirements or planning tasks, discuss and document first when the user asks to plan before coding. Present related unresolved points together as a concise numbered review list, with the current assumption, recommended default, and material impact for each item, so the user can respond through annotations or grouped feedback instead of a one-question-at-a-time exchange. Ask a single blocking question separately only when its answer determines which remaining questions are relevant.
 - If a visible UI tool is involved, prefer concrete GUI navigation paths and the panel shown in the user's screenshot over CLI-only equivalents.
 - Lead with the outcome in plain language. Use precise professional or technical terms when they improve accuracy, and briefly explain terms that are outside the user's field or unlikely to be familiar. Keep explanation depth, process detail, and unexplained jargon proportional to the user's need.
 - Keep short and medium tasks single-agent by default. Delegate only independent branches with clear acceptance checks, and keep final integration and verification with the main agent.
