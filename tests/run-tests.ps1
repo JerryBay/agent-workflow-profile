@@ -84,6 +84,8 @@ function Invoke-ProfileValidator {
 
 Assert-FileContains "AGENTS.md" "mode, goal, boundaries, and acceptance criteria" "Task contract"
 Assert-FileContains "AGENTS.md" "use a fast path" "Low-risk fast path"
+Assert-FileContains "AGENTS.md" "Resolve approximate names, shorthand, aliases, and omitted paths" "Contextual reference resolution"
+Assert-FileContains "AGENTS.md" "challenge it directly and briefly" "Evidence-backed challenge"
 Assert-FileContains "AGENTS.md" "implemented, verified, and unverified" "Completion-state separation"
 Assert-FileContains "AGENTS.md" "single-agent" "Delegation threshold"
 Assert-FileContains "AGENTS.md" "evidence-backed, reversible work" "Autonomous-action threshold"
