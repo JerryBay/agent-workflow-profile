@@ -117,6 +117,8 @@ $designSkill = "plugins\personal-workflow\skills\design-first-project-planning\S
 foreach ($section in @("Confirmed", "Rejected", "Open", "Evidence", "Next validation")) {
     Assert-FileContains $designSkill ([regex]::Escape($section)) "Decision-log section '$section'"
 }
+Assert-FileContains $designSkill "Present related unresolved points together as a concise numbered review list" "Grouped planning clarification"
+Assert-FileContains $designSkill "Ask a single blocking question separately" "Planning blocking-question exception"
 
 $debugSkill = "plugins\personal-workflow\skills\evidence-first-local-debugging\SKILL.md"
 Assert-FileContains $debugSkill "inclusion" "Repository-analysis inclusion rule"

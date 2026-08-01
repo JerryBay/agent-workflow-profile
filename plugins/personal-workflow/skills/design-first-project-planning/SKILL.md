@@ -13,7 +13,7 @@ When the user asks to discuss or plan first, keep the session in design/spec mod
 
 1. Inspect current project docs and nearby code enough to understand existing structure.
 2. Name the active workflow explicitly: design first, no implementation yet.
-3. Ask one focused clarification at a time. Prefer the question that decides scope or ownership.
+3. Present related unresolved points together as a concise numbered review list. For each point, state the current assumption, recommended default, and material impact. Ask a single blocking question separately only when its answer determines which remaining questions are relevant.
 4. Maintain a compact decision log using Confirmed, Rejected, Open, Evidence, and Next validation.
 5. Keep the living document concise. Use the repo's preferred `design.md` if one exists; otherwise use the project's established docs/spec location.
 6. For demo work, document demo-level behavior and visible constraints before implementation details.
@@ -37,7 +37,7 @@ When the user asks to discuss or plan first, keep the session in design/spec mod
 
 | Mistake | Correction |
 | --- | --- |
-| Asking a batch of broad questions | Ask the one question that unblocks the next design decision |
+| Asking related unresolved points one at a time, or dumping an unstructured batch | Group related points into a concise numbered review list; isolate only a truly blocking question |
 | Restyling docs the user did not ask to change | Update the living requirement/design content only |
 | Mixing decisions with speculation | Keep Confirmed, Rejected, Open, Evidence, and Next validation distinct |
 | Starting implementation with vague completion criteria | Agree on visible acceptance criteria first |
