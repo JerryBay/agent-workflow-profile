@@ -1,0 +1,14 @@
+{
+  "name": "codex-workflow-profile",
+  "version": "0.3.0",
+  "private": true,
+  "description": "Portable personal engineering workflows shared by Codex and Pi.",
+  "keywords": [
+    "pi-package"
+  ],
+  "pi": {
+    "skills": [
+      "./plugins/personal-workflow/skills"
+    ]
+  }
+}

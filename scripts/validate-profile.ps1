@@ -13,6 +13,7 @@ $repoRoot = (Resolve-Path -LiteralPath $Root).Path
 $agentsPath = Join-Path $repoRoot "AGENTS.md"
 $readmePath = Join-Path $repoRoot "README.md"
 $marketplacePath = Join-Path $repoRoot ".agents\plugins\marketplace.json"
+$piPackagePath = Join-Path $repoRoot "package.json"
 $pluginRoot = Join-Path $repoRoot "plugins\personal-workflow"
 $pluginManifestPath = Join-Path $pluginRoot ".codex-plugin\plugin.json"
 $skillsRoot = Join-Path $pluginRoot "skills"
@@ -49,6 +50,7 @@ Assert-Exists -Path $skillsRoot -Label "Skills directory"
 
 $marketplace = Read-JsonFile -Path $marketplacePath -Label "Marketplace manifest"
 $pluginManifest = Read-JsonFile -Path $pluginManifestPath -Label "Plugin manifest"
+$piPackage = Read-JsonFile -Path $piPackagePath -Label "Pi package manifest"
 
 if ($marketplace.name -ne "codex-workflow-profile") {
     throw "Marketplace name must be 'codex-workflow-profile'."
@@ -69,6 +71,23 @@ if ([string]$pluginManifest.version -notmatch '^\d+\.\d+\.\d+$') {
 
 if ($pluginManifest.skills -ne "./skills/") {
     throw "Plugin skills path must be './skills/'."
+}
+
+if ($piPackage.name -ne "codex-workflow-profile") {
+    throw "Pi package name must be 'codex-workflow-profile'."
+}
+
+if ([string]$piPackage.version -ne [string]$pluginManifest.version) {
+    throw "Pi package version must match the Codex plugin version."
+}
+
+if (@($piPackage.keywords) -notcontains "pi-package") {
+    throw "Pi package keywords must include 'pi-package'."
+}
+
+$piSkillPaths = @($piPackage.pi.skills)
+if ($piSkillPaths.Count -ne 1 -or $piSkillPaths[0] -ne "./plugins/personal-workflow/skills") {
+    throw "Pi package must load the shared skills from './plugins/personal-workflow/skills'."
 }
 
 $skillDirectories = @(Get-ChildItem -LiteralPath $skillsRoot -Directory | Sort-Object Name)
@@ -138,6 +157,7 @@ foreach ($skillDirectory in $skillDirectories) {
 $portableFiles = [System.Collections.Generic.List[string]]::new()
 $portableFiles.Add($agentsPath)
 $portableFiles.Add($readmePath)
+$portableFiles.Add($piPackagePath)
 Get-ChildItem -LiteralPath $skillsRoot -Recurse -File |
     Where-Object { $_.Extension -in @('.md', '.yaml', '.yml', '.json', '.txt') } |
     ForEach-Object { $portableFiles.Add($_.FullName) }
@@ -150,4 +170,4 @@ foreach ($portableFile in $portableFiles) {
     }
 }
 
-Write-Host "Validated personal workflow profile: $($skillDirectories.Count) skills, plugin version $($pluginManifest.version)."
+Write-Host "Validated personal workflow profile: $($skillDirectories.Count) shared skills, Codex/Pi version $($pluginManifest.version)."

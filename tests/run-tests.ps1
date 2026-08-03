@@ -133,8 +133,24 @@ Assert-FileContains "README.md" "local-repo-orientation" "README skill inventory
 Assert-FileContains "README.md" "architecture-aware-development" "README architecture skill inventory"
 
 Assert-FileContains "plugins\personal-workflow\.codex-plugin\plugin.json" '"version"\s*:\s*"0\.3\.0"' "Plugin version"
+Assert-PathExists "package.json" "Pi package manifest"
+Assert-FileContains "package.json" '"pi-package"' "Pi package keyword"
+Assert-FileContains "package.json" '\./plugins/personal-workflow/skills' "Shared Pi skill path"
 Assert-PathExists "scripts\validate-profile.ps1" "Profile validator"
 Assert-FileContains "install.ps1" "ValidateOnly" "Validation-only install mode"
+Assert-PathExists "install-pi.ps1" "Pi installer"
+Assert-FileContains "install-pi.ps1" "ValidateOnly" "Pi validation-only install mode"
+Assert-FileContains "install-pi.ps1" "PI_CODING_AGENT_DIR" "Pi configuration directory override"
+
+$piInstallerPath = Join-Path $repoRoot "install-pi.ps1"
+if (Test-Path -LiteralPath $piInstallerPath) {
+    try {
+        & $piInstallerPath -ValidateOnly | Out-Null
+    }
+    catch {
+        Add-Failure "Pi installer validation-only mode failed: $($_.Exception.Message)"
+    }
+}
 
 $validatorPath = Join-Path $repoRoot "scripts\validate-profile.ps1"
 if (Test-Path -LiteralPath $validatorPath) {
@@ -172,6 +188,69 @@ if (Test-Path -LiteralPath $validatorPath) {
         Add-Content -LiteralPath $skillPath -Value "Example project: E:\specific\project" -Encoding UTF8
         if ((Invoke-ProfileValidator -Root $absolutePath) -eq 0) {
             Add-Failure "Validator accepted a hard-coded Windows project path"
+        }
+
+        $wrongPiSkills = Copy-ProfileFixture -Name "wrong-pi-skills"
+        $fixtureRoots.Add($wrongPiSkills)
+        $packagePath = Join-Path $wrongPiSkills "package.json"
+        $package = Get-Content -LiteralPath $packagePath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $package.pi.skills = @("./different-skills")
+        $package | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $packagePath -Encoding UTF8
+        if ((Invoke-ProfileValidator -Root $wrongPiSkills) -eq 0) {
+            Add-Failure "Validator accepted a Pi package that does not use the shared skills"
+        }
+
+        $piInstall = Copy-ProfileFixture -Name "pi-install"
+        $fixtureRoots.Add($piInstall)
+        $previousPiAgentDir = $env:PI_CODING_AGENT_DIR
+        $previousUserProfile = $env:USERPROFILE
+        try {
+            $testPiAgentDir = Join-Path $piInstall ".pi-agent"
+            New-Item -ItemType Directory -Path $testPiAgentDir | Out-Null
+            $testPiAgents = Join-Path $testPiAgentDir "AGENTS.md"
+            Set-Content -LiteralPath $testPiAgents -Value "previous Pi rules" -Encoding UTF8
+
+            $testCodexDir = Join-Path $piInstall ".codex"
+            New-Item -ItemType Directory -Path $testCodexDir | Out-Null
+            $testCodexAgents = Join-Path $testCodexDir "AGENTS.md"
+            Set-Content -LiteralPath $testCodexAgents -Value "unchanged Codex rules" -Encoding UTF8
+            $codexAgentsHash = (Get-FileHash -LiteralPath $testCodexAgents).Hash
+
+            $fakePiLog = Join-Path $piInstall "pi-command.log"
+            $fakePiCommand = Join-Path $piInstall "pi.cmd"
+            $fakePiScript = "@echo off`r`necho %* > `"$fakePiLog`"`r`nexit /b 0"
+            Set-Content -LiteralPath $fakePiCommand -Value $fakePiScript -Encoding ASCII
+
+            $env:PI_CODING_AGENT_DIR = $testPiAgentDir
+            $env:USERPROFILE = $piInstall
+
+            & (Join-Path $piInstall "install-pi.ps1") -PiCommand $fakePiCommand | Out-Null
+
+            $expectedPiArguments = "install $piInstall"
+            if (-not (Test-Path -LiteralPath $fakePiLog) -or
+                (Get-Content -LiteralPath $fakePiLog -Raw).Trim() -ne $expectedPiArguments) {
+                Add-Failure "Pi installer did not register the current checkout as a local package"
+            }
+
+            $sourceAgents = Join-Path $piInstall "AGENTS.md"
+            if ((Get-FileHash -LiteralPath $sourceAgents).Hash -ne (Get-FileHash -LiteralPath $testPiAgents).Hash) {
+                Add-Failure "Pi installer did not install the shared AGENTS.md"
+            }
+
+            if (@(Get-ChildItem -LiteralPath $testPiAgentDir -Filter "AGENTS.md.backup-*").Count -ne 1) {
+                Add-Failure "Pi installer did not back up the previous AGENTS.md"
+            }
+
+            if ((Get-FileHash -LiteralPath $testCodexAgents).Hash -ne $codexAgentsHash) {
+                Add-Failure "Pi installer modified the existing Codex AGENTS.md"
+            }
+        }
+        catch {
+            Add-Failure "Pi installer fixture failed: $($_.Exception.Message)"
+        }
+        finally {
+            $env:PI_CODING_AGENT_DIR = $previousPiAgentDir
+            $env:USERPROFILE = $previousUserProfile
         }
     }
     finally {
