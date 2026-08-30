@@ -52,8 +52,8 @@ $marketplace = Read-JsonFile -Path $marketplacePath -Label "Marketplace manifest
 $pluginManifest = Read-JsonFile -Path $pluginManifestPath -Label "Plugin manifest"
 $piPackage = Read-JsonFile -Path $piPackagePath -Label "Pi package manifest"
 
-if ($marketplace.name -ne "codex-workflow-profile") {
-    throw "Marketplace name must be 'codex-workflow-profile'."
+if ($marketplace.name -ne "agent-workflow-profile") {
+    throw "Marketplace name must be 'agent-workflow-profile'."
 }
 
 $marketplacePlugin = @($marketplace.plugins) | Where-Object { $_.name -eq "personal-workflow" }
@@ -73,8 +73,8 @@ if ($pluginManifest.skills -ne "./skills/") {
     throw "Plugin skills path must be './skills/'."
 }
 
-if ($piPackage.name -ne "codex-workflow-profile") {
-    throw "Pi package name must be 'codex-workflow-profile'."
+if ($piPackage.name -ne "agent-workflow-profile") {
+    throw "Pi package name must be 'agent-workflow-profile'."
 }
 
 if ([string]$piPackage.version -ne [string]$pluginManifest.version) {

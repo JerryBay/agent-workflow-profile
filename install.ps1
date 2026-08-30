@@ -9,7 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = $PSScriptRoot
-$marketplaceName = "codex-workflow-profile"
+$marketplaceName = "agent-workflow-profile"
 $pluginName = "personal-workflow"
 $pluginSelector = "$pluginName@$marketplaceName"
 $validator = Join-Path $repoRoot "scripts\validate-profile.ps1"
@@ -78,4 +78,4 @@ if (-not $SkipPlugin) {
     }
 }
 
-Write-Host "Codex workflow profile is ready. Restart Codex or open a new chat."
+Write-Host "Agent workflow profile is ready. Restart Codex or open a new chat."

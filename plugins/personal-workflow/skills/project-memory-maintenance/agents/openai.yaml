@@ -1,0 +1,5 @@
+interface:
+  display_name: "Project Memory Maintenance"
+  short_description: "Initialize and maintain durable project memory."
+  default_prompt: "Use $project-memory-maintenance to initialize, maintain, audit, or explicitly upgrade this repository's persistent project memory without committing changes."
+

@@ -1,4 +1,4 @@
-# Codex Workflow Profile
+# Agent Workflow Profile
 
 这是一个跨电脑使用的个人 Codex 与 Pi 工作流仓库，只保存与具体工程无关的长期习惯。
 
@@ -12,6 +12,7 @@
 - `minimal-scope-repo-change`：按现有所有权做最小改动，并明确实际达到的验收层级。
 - `architecture-aware-development`：在开发和重构中平衡高内聚低耦合、数据结构、性能风险与适度设计。
 - `design-first-project-planning`：用户要求先讨论时，维护决策记录和验收标准，再进入实现。
+- `project-memory-maintenance`：仅在明确要求时初始化工程记忆，并在已接入项目中按实质影响维护、审计或显式升级长期项目事实。
 - `windows-gui-dev-workflow`：Visual Studio、Fork、P4V、Docker Desktop 等 GUI 工具优先给出具体界面路径。
 
 不包含任何特定项目路径、构建参数和资源配置。`local-repo-orientation` 只提供空白入口卡模板；每台电脑发现的机器值应保存在项目认可的本地文件或忽略规则中。需要团队共享的项目规则仍应保存在对应项目自己的 `AGENTS.md` 或 `.agents/skills` 中。
@@ -41,7 +42,7 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 1. 备份新电脑上已有的 `%USERPROFILE%\.codex\AGENTS.md`。
 2. 安装仓库中的全局 `AGENTS.md`。
-3. 注册 `codex-workflow-profile` marketplace。
+3. 注册 `agent-workflow-profile` marketplace。
 4. 安装 `personal-workflow` 插件。
 
 完成后重启 Codex 或开启一个新对话。
