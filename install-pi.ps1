@@ -3,12 +3,15 @@ param(
     [switch]$SkipAgents,
     [switch]$SkipPackage,
     [switch]$ValidateOnly,
+    [switch]$MigrateLegacy,
+    [string]$LegacyPackagePath,
     [string]$PiCommand
 )
 
 $ErrorActionPreference = "Stop"
 
 $repoRoot = $PSScriptRoot
+. (Join-Path $repoRoot 'scripts\installation-common.ps1')
 $validator = Join-Path $repoRoot "scripts\validate-profile.ps1"
 
 & $validator -Root $repoRoot
@@ -37,18 +40,53 @@ if (-not $SkipPackage) {
     }
 }
 
-$piAgentDir = $env:PI_CODING_AGENT_DIR
-if ([string]::IsNullOrWhiteSpace($piAgentDir)) {
-    $piAgentDir = Join-Path $env:USERPROFILE ".pi\agent"
-}
+$piAgentDir = Get-ProfileHome Pi
+if ($SkipPackage -and $MigrateLegacy) { throw 'Legacy migration requires package installation.' }
 
 if (-not $SkipPackage) {
-    $LASTEXITCODE = 0
-    & $piExecutable install $repoRoot
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to register the local Pi package from '$repoRoot'."
+    $settingsPath = Join-Path $piAgentDir 'settings.json'
+    $legacyEntries = @()
+    if ($MigrateLegacy) {
+        if (-not $LegacyPackagePath) {
+            $LegacyPackagePath = Join-Path (Split-Path -Parent $repoRoot) 'codex-workflow-profile'
+        }
+        if ((Get-ProfilePath $LegacyPackagePath) -eq (Get-ProfilePath $repoRoot)) {
+            throw 'The legacy package path must differ from the current checkout.'
+        }
+        if (Test-Path -LiteralPath $settingsPath) {
+            $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            $legacyEntries = @($settings.packages | Where-Object {
+                $source = Get-PiPackageSource $_
+                [IO.Path]::IsPathRooted($source) -and (Get-ProfilePath $source) -eq (Get-ProfilePath $LegacyPackagePath)
+            })
+            if (@($legacyEntries | Where-Object { $_ -isnot [string] }).Count) {
+                throw 'The legacy Pi entry has resource filters. Review and migrate those settings explicitly before removing it.'
+            }
+        }
     }
-    Write-Host "Registered the local Pi package from $repoRoot"
+    $backupRoot = Join-Path $piAgentDir ('workflow-profile-backups\' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
+    Backup-ProfilePath $settingsPath $backupRoot 'settings.json'
+    $previousAgentDir = $env:PI_CODING_AGENT_DIR
+    try {
+        $env:PI_CODING_AGENT_DIR = $piAgentDir
+        Invoke-ProfileCommand $piExecutable @('install', $repoRoot)
+        $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        $registered = @($settings.packages | Where-Object {
+            $source = Get-PiPackageSource $_
+            [IO.Path]::IsPathRooted($source) -and (Get-ProfilePath $source) -eq (Get-ProfilePath $repoRoot)
+        })
+        if ($registered.Count -ne 1) { throw 'Pi did not persist exactly one registration for this checkout. Legacy entries were preserved.' }
+        foreach ($entry in $legacyEntries) {
+            Invoke-ProfileCommand $piExecutable @('remove', $entry)
+        }
+        if ($legacyEntries.Count) {
+            $settings = Get-Content -LiteralPath $settingsPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            $remaining = @($settings.packages | Where-Object { (Get-PiPackageSource $_) -in $legacyEntries })
+            if ($remaining.Count) { throw 'Pi still contains the legacy package registration.' }
+        }
+    }
+    finally { $env:PI_CODING_AGENT_DIR = $previousAgentDir }
+    Write-Host "Verified the local Pi package registration from $repoRoot"
 }
 
 if (-not $SkipAgents) {

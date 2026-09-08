@@ -3,12 +3,16 @@ param(
     [switch]$SkipAgents,
     [switch]$SkipPlugin,
     [switch]$RefreshPlugin,
-    [switch]$ValidateOnly
+    [switch]$ValidateOnly,
+    [switch]$MigrateLegacy,
+    [string[]]$ArchiveStandaloneSkills = @(),
+    [string]$CodexCommand = 'codex'
 )
 
 $ErrorActionPreference = "Stop"
 
 $repoRoot = $PSScriptRoot
+. (Join-Path $repoRoot 'scripts\installation-common.ps1')
 $marketplaceName = "agent-workflow-profile"
 $pluginName = "personal-workflow"
 $pluginSelector = "$pluginName@$marketplaceName"
@@ -21,60 +25,86 @@ if ($ValidateOnly) {
     return
 }
 
-if (-not $SkipAgents) {
-    $codexDir = Join-Path $env:USERPROFILE ".codex"
-    $sourceAgents = Join-Path $repoRoot "AGENTS.md"
-    $targetAgents = Join-Path $codexDir "AGENTS.md"
-
-    New-Item -ItemType Directory -Force -Path $codexDir | Out-Null
-
-    if (Test-Path -LiteralPath $targetAgents) {
-        $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
-        $backupAgents = "$targetAgents.backup-$timestamp"
-        Copy-Item -LiteralPath $targetAgents -Destination $backupAgents -Force
-        Write-Host "Backed up existing AGENTS.md to $backupAgents"
-    }
-
-    Copy-Item -LiteralPath $sourceAgents -Destination $targetAgents -Force
-    Write-Host "Installed global AGENTS.md to $targetAgents"
+if ($SkipPlugin -and ($MigrateLegacy -or $ArchiveStandaloneSkills.Count)) {
+    throw 'Migration and standalone archival require plugin installation and verification.'
 }
+$sourcePlugin = Join-Path $repoRoot 'plugins\personal-workflow'
+$manifest = Get-Content -LiteralPath (Join-Path $sourcePlugin '.codex-plugin\plugin.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+$knownSkills = @(Get-ChildItem -LiteralPath (Join-Path $sourcePlugin 'skills') -Directory | Select-Object -ExpandProperty Name)
+foreach ($name in $ArchiveStandaloneSkills) {
+    if ($name -notin $knownSkills) { throw "Not a shared profile skill: $name. Review it separately." }
+}
+$codexDir = Get-ProfileHome Codex
+$backupRoot = Join-Path $codexDir ('workflow-profile-backups\' + (Get-Date -Format 'yyyyMMdd-HHmmss-fff'))
 
 if (-not $SkipPlugin) {
-    $codexCommand = Get-Command codex -ErrorAction Stop
-    $marketplaceState = (& $codexCommand.Source plugin marketplace list --json | Out-String | ConvertFrom-Json)
-    $marketplaceExists = @($marketplaceState.marketplaces) |
-        Where-Object { $_.name -eq $marketplaceName }
-
-    if ($marketplaceExists) {
-        Write-Host "Marketplace '$marketplaceName' is already registered."
-    }
-    else {
-        & $codexCommand.Source plugin marketplace add $repoRoot --json
-        if ($LASTEXITCODE -ne 0) {
-            throw "Failed to register marketplace '$marketplaceName'."
+    Get-Command $CodexCommand -ErrorAction Stop | Out-Null
+    Backup-ProfilePath (Join-Path $codexDir 'config.toml') $backupRoot 'config.toml'
+    $previousHome = $env:CODEX_HOME
+    try {
+        $env:CODEX_HOME = $codexDir
+        if ($MigrateLegacy) {
+            # A missing legacy root can break list itself, so unregister it first.
+            Backup-ProfilePath (Join-Path $codexDir 'plugins\cache\codex-workflow-profile\personal-workflow') $backupRoot 'legacy-plugin'
+            Invoke-ProfileCommand $CodexCommand @('plugin', 'marketplace', 'remove', 'codex-workflow-profile', '--json') -Json -AllowMissingMarketplace | Out-Null
         }
-    }
-
-    $pluginState = (& $codexCommand.Source plugin list --json | Out-String | ConvertFrom-Json)
-    $installedJson = $pluginState.installed | ConvertTo-Json -Depth 20 -Compress
-    $pluginInstalled = $installedJson -match [regex]::Escape($pluginName)
-
-    if ($pluginInstalled -and $RefreshPlugin) {
-        & $codexCommand.Source plugin remove $pluginSelector --json
-        if ($LASTEXITCODE -ne 0) {
-            throw "Failed to remove the existing '$pluginSelector' plugin."
+        Invoke-ProfileCommand $CodexCommand @('plugin', 'marketplace', 'add', $repoRoot, '--json') -Json | Out-Null
+        $markets = Invoke-ProfileCommand $CodexCommand @('plugin', 'marketplace', 'list', '--json') -Json
+        $market = @($markets.marketplaces | Where-Object { $_.name -eq $marketplaceName })
+        if ($market.Count -ne 1 -or (Get-ProfilePath $market[0].root) -ne (Get-ProfilePath $repoRoot)) {
+            throw 'Marketplace registration does not point to this checkout.'
         }
-        $pluginInstalled = $false
-    }
-
-    if (-not $pluginInstalled) {
-        & $codexCommand.Source plugin add $pluginSelector --json
-        if ($LASTEXITCODE -ne 0) {
-            throw "Failed to install plugin '$pluginSelector'."
+        $state = Invoke-ProfileCommand $CodexCommand @('plugin', 'list', '--json') -Json
+        $installed = @($state.installed | Where-Object { $_.pluginId -eq $pluginSelector })
+        $cachePath = Join-Path $codexDir "plugins\cache\$marketplaceName\personal-workflow\$($manifest.version)"
+        $current = $installed.Count -eq 1 -and $installed[0].enabled -eq $true -and
+            $installed[0].version -eq $manifest.version -and (Test-Path -LiteralPath $cachePath) -and
+            @(Get-ProfileTreeDifference $sourcePlugin $cachePath).Count -eq 0
+        if ($RefreshPlugin -or -not $current) {
+            Backup-ProfilePath (Join-Path $codexDir "plugins\cache\$marketplaceName\personal-workflow") $backupRoot 'current-plugin'
+            if ($installed.Count -gt 0) {
+                Invoke-ProfileCommand $CodexCommand @('plugin', 'remove', $pluginSelector, '--json') -Json | Out-Null
+            }
+            Invoke-ProfileCommand $CodexCommand @('plugin', 'add', $pluginSelector, '--json') -Json | Out-Null
         }
+        $verified = Invoke-ProfileCommand $CodexCommand @('plugin', 'list', '--json') -Json
+        $plugin = @($verified.installed | Where-Object { $_.pluginId -eq $pluginSelector })
+        if ($plugin.Count -ne 1 -or $plugin[0].enabled -ne $true -or $plugin[0].version -ne $manifest.version -or
+            -not (Test-Path -LiteralPath $cachePath) -or @(Get-ProfileTreeDifference $sourcePlugin $cachePath).Count -ne 0) {
+            throw 'Installed plugin failed identity, enabled state, version or content verification. Standalone skills were preserved.'
+        }
+        if ($MigrateLegacy) {
+            Invoke-ProfileCommand $CodexCommand @('plugin', 'remove', 'personal-workflow@codex-workflow-profile', '--json') -Json | Out-Null
+        }
+        foreach ($name in $ArchiveStandaloneSkills) {
+            $standalone = Join-Path $codexDir "skills\$name"
+            if (Test-Path -LiteralPath $standalone) {
+                $difference = @(Get-ProfileTreeDifference (Join-Path $sourcePlugin "skills\$name") $standalone)
+                Write-Host "Archiving reviewed standalone skill '$name': $($difference -join '; ')"
+                $destination = Join-Path $backupRoot 'standalone-skills'
+                New-Item -ItemType Directory -Path $destination -Force | Out-Null
+                $resolved = (Resolve-Path -LiteralPath $standalone).Path
+                if ((Split-Path -Parent $resolved) -ne (Get-ProfilePath (Join-Path $codexDir 'skills')) -or
+                    ((Get-Item -LiteralPath $standalone).Attributes -band [IO.FileAttributes]::ReparsePoint)) {
+                    throw "Refusing to archive a redirected skill path: $standalone"
+                }
+                Move-Item -LiteralPath $resolved -Destination (Join-Path $destination $name)
+            }
+        }
+        Write-Host "Verified $pluginSelector version $($manifest.version)."
     }
-    else {
-        Write-Host "Plugin '$pluginName' is already installed. Use -RefreshPlugin to reinstall it."
+    finally { $env:CODEX_HOME = $previousHome }
+}
+
+if (-not $SkipAgents) {
+    $sourceAgents = Join-Path $repoRoot 'AGENTS.md'
+    $targetAgents = Join-Path $codexDir 'AGENTS.md'
+    $current = (Test-Path -LiteralPath $targetAgents) -and
+        (Get-FileHash -LiteralPath $sourceAgents).Hash -eq (Get-FileHash -LiteralPath $targetAgents).Hash
+    if (-not $current) {
+        Backup-ProfilePath $targetAgents $backupRoot 'AGENTS.md'
+        New-Item -ItemType Directory -Path $codexDir -Force | Out-Null
+        Copy-Item -LiteralPath $sourceAgents -Destination $targetAgents -Force
     }
 }
 
