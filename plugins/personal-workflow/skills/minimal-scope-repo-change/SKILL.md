@@ -15,7 +15,7 @@ Make the smallest design-correct, repo-appropriate change that satisfies the req
 2. Read the nearby code and ownership boundaries.
 3. Identify the module, node, command, component, or subsystem that already owns similar behavior.
 4. Check whether the change affects module boundaries, data ownership or shape, or a plausible hot path. Preserve high cohesion and low coupling; justify the smallest structural widening when a local patch would put behavior under the wrong owner.
-5. Prefer existing helpers, conventions, config formats, and test style.
+5. Prefer existing helpers, conventions, config formats, and test style. If the chosen path starts requiring auxiliary assets, compensating conversions, or new user restrictions, reassess it against the existing representation and workflow before extending the patch. Explain whether these costs are inherent or avoidable; confirm newly exposed material impacts outside existing authorization. Do not encode a workaround's limitations as export or input validation requirements without this review. Keep equivalent local fixes on the fast path.
 6. Avoid unrelated refactors, metadata churn, broad rewrites, and speculative abstractions.
 7. Protect user work: do not revert unrelated dirty files or edits you did not make.
 8. Verify with the narrowest meaningful command that reaches the required acceptance level.
