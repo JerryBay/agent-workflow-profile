@@ -13,7 +13,7 @@
 - `architecture-aware-development`：在开发和重构中平衡高内聚低耦合、数据结构、性能风险与适度设计。
 - `design-first-project-planning`：用户要求先讨论时，维护决策记录和验收标准，再进入实现。
 - `project-memory-maintenance`：仅在明确要求时初始化工程记忆，并在已接入项目中按实质影响维护、审计或显式升级长期项目事实。
-- `windows-gui-dev-workflow`：Visual Studio、Fork、P4V、Docker Desktop 等 GUI 工具优先给出具体界面路径。
+- `windows-gui-dev-workflow`：桌面的 GUI 工具使用优先给出具体界面路径。
 
 不包含任何特定项目路径、构建参数和资源配置。`local-repo-orientation` 只提供空白入口卡模板；每台电脑发现的机器值应保存在项目认可的本地文件或忽略规则中。需要团队共享的项目规则仍应保存在对应项目自己的 `AGENTS.md` 或 `.agents/skills` 中。
 
