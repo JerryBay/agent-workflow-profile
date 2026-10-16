@@ -1,6 +1,6 @@
 ---
 name: windows-gui-dev-workflow
-description: Use when the user asks about Windows development GUI tools such as Visual Studio, Fork, P4V, Docker Desktop, debugger panels, screenshots, workspace recovery, submodule status, startup projects, or symbol/module views.
+description: Use when the user asks about Windows development GUI tools such as Visual Studio, Fork, P4V, Unity Editor, RenderDoc, Docker Desktop, debugger panels, screenshots, workspace recovery, submodule status, startup projects, or symbol/module views.
 ---
 
 # Windows GUI Dev Workflow
@@ -30,6 +30,19 @@ When the task is about a GUI tool, answer in terms of the visible panel and exac
 
 - Check Linux containers mode, WSL2 backend, distro integration, and `.wslconfig` resource settings.
 - Use `wsl --shutdown` after WSL config changes.
+
+## Unity Editor
+
+- Anchor editor answers to the Unity version, active project, open scene, selected object or asset, and the visible Console, Inspector, Hierarchy, Project, or Package Manager state.
+- For import, export, or preview issues, distinguish asset generation, editor import, assembly reload, editor preview, and target-runtime playback; one stage succeeding does not prove the next stage.
+- Inspect the actual Console errors, asset paths, serialized references, and package or assembly state before recommending deletion of `Library` or regeneration of the project.
+
+## RenderDoc
+
+- Confirm the captured process, graphics API, frame, build/configuration, and capture timing before drawing conclusions from a capture.
+- Use the Event Browser, Pipeline State, Resource Inspector, and shader or texture views to connect a visible symptom to a concrete draw or resource; seeing a draw call alone does not prove correct final output.
+- Treat RenderDoc inspection as frame evidence. It does not by itself prove behavior across frames, resource loading, packaged deployment, or the target application's normal runtime path.
+- When the task uses the RenderDoc MCP analyzer, keep the GUI capture context and tool analysis aligned; do not replace a missing runtime replay with static capture interpretation.
 
 ## Screenshot Handling
 
