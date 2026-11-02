@@ -1,11 +1,11 @@
 # Agent Workflow Profile
 
-这是一个跨电脑使用的个人 Codex 与 Pi 工作流仓库，只保存与具体工程无关的长期习惯。
+这是一个跨电脑使用的个人 Codex、Pi 与 DeepSeek Harness 工作流仓库，只保存与具体工程无关的长期习惯。
 
 ## 包含内容
 
-- `AGENTS.md`：Codex 与 Pi 共用的长期个人协作规则。
-- `plugins/personal-workflow`：Codex 插件与 Pi package 共用的 skills 唯一来源。
+- `AGENTS.md`：三个工具共用的长期个人协作规则。
+- `plugins/personal-workflow`：Codex 插件、Pi package 与 DeepSeek Harness 共用的 skills 唯一来源。
 - `package.json`：把同一组 skills 注册为本地 Pi package。
 - `evidence-first-local-debugging`：从真实本地证据开始诊断，并严格尊重只读边界。
 - `local-repo-orientation`：在新电脑或陌生 checkout 中重新确认入口、当前基线、未验证项和下一步。
@@ -25,9 +25,10 @@
 Set-ExecutionPolicy -Scope Process Bypass
 .\install.ps1 -ValidateOnly
 .\install-pi.ps1 -ValidateOnly
+.\install-dsh.ps1 -ValidateOnly
 ```
 
-校验会检查 marketplace/plugin/Pi package JSON、skill frontmatter、`agents/openai.yaml`、目录命名，以及通用内容中意外写入的 Windows 绝对工程路径。两个正常安装脚本都会先执行同一套校验。
+校验会检查 marketplace/plugin/Pi package JSON、skill frontmatter、`agents/openai.yaml`、目录命名，以及通用内容中意外写入的 Windows 绝对工程路径。三个正常安装脚本都会先执行同一套校验。
 
 ## 新电脑安装
 
@@ -64,16 +65,54 @@ Set-ExecutionPolicy -Scope Process Bypass
 
 Pi 默认配置目录是 `%USERPROFILE%\.pi\agent`；脚本也尊重 `PI_CODING_AGENT_DIR`。如果 `pi` 不在 `PATH` 中，可以通过 `-PiCommand` 传入可执行文件路径。完成后开启新的 Pi 会话。
 
+## DeepSeek Harness 安装
+
+克隆仓库后，在仓库目录执行以下命令即可安装个人规则和 skills：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install-dsh.ps1
+```
+
+脚本使用复制方式，无需管理员权限或 Windows 链接，也不依赖 Codex marketplace：
+
+1. 校验共享规则与全部 skills 的 `SKILL.md`、`name`、`description`。
+2. 备份并同步全局 `AGENTS.md` 到 `%USERPROFILE%\.dsh\AGENTS.md`。
+3. 将共享 skills 按名称复制到 `%USERPROFILE%\.dsh\skills\`，包括 references、scripts、assets 等配套文件，并逐文件核对 SHA-256。
+4. 内容相同时跳过；已有同名 skill 内容不同时，普通安装会在写入前停止，使用 `-Refresh` 才会备份并替换。
+
+安装目录优先级为 `-DshHome` 参数、`DSH_HOME` 环境变量、`%USERPROFILE%\.dsh`。显式指定目录只决定本次复制位置；DSH 本身也需要使用相同的 `DSH_HOME`。脚本拒绝替换链接路径，也不允许把目标设为本仓库根目录或共享 skills 源目录内部。`-SkipAgents` 或 `-SkipSkills` 可只同步其中一部分，`-ValidateOnly` 仅校验仓库，不创建目标目录。
+
+```powershell
+# 同步仓库更新，或恢复被修改的同名 skills
+.\install-dsh.ps1 -Refresh
+
+# 指定目标，例如隔离配置目录
+.\install-dsh.ps1 -DshHome "$env:USERPROFILE\.dsh-work"
+```
+
+旧文件保存在目标目录的 `workflow-profile-backups\<时间戳与唯一编号>\` 中，保留原相对路径。刷新会完整替换本仓库当前包含的同名 skill 目录，包括移除其旧配套文件；同名平铺 `<skill-name>.md` 冲突需先处理。其他 skills、配置、账号和会话不变；仓库已删除或改名的旧 skill 不会自动清理。
+
+完成后开启新的 DSH 会话以加载全局规则。默认发现路径依据官方 [agent-instructions](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/context/agent-instructions/README.md) 和 [skill-filesystem](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/skill/skill-filesystem/README.md) 文档；自定义预设必须启用对应插件。文件安装和 hash 校验成功，不代表已确认某次会话实际加载了规则或触发了 skill。
+
+此入口只安装工作流，不安装 DSH 本体、不配置模型或密钥、不更改权限或 Agent 预设。隔离安装测试可运行：
+
+```powershell
+.\tests\test-dsh-installation.ps1
+```
+
 ## 更新
 
 ```powershell
 git pull
 .\install.ps1 -RefreshPlugin
 .\install-pi.ps1
+.\install-dsh.ps1 -Refresh
 ```
 
 `-RefreshPlugin` 会从已注册的本地 marketplace 重新安装 Codex 插件缓存。Pi package 直接引用当前 checkout 中的共享 skills；重新运行 Pi 安装脚本会同步全局 `AGENTS.md` 并确保 package 仍已注册。
 
+按实际使用的工具选择安装入口即可。DeepSeek Harness 使用独立副本，拉取更新后运行 `install-dsh.ps1 -Refresh` 同步。
+
 ## 安全边界
 
-不要把整个 `%USERPROFILE%\.codex` 或 `%USERPROFILE%\.pi` 目录加入版本控制。这些目录可能包含认证信息、会话数据库、日志、缓存和机器相关配置。本仓库只管理经过筛选的规则、skills 和安装元数据。Pi 安装脚本只安装工作流，不会增加沙箱或命令审批机制。
+不要把整个 `%USERPROFILE%\.codex`、`%USERPROFILE%\.pi` 或 `%USERPROFILE%\.dsh` 目录加入版本控制。这些目录可能包含认证信息、会话数据库、日志、缓存和机器相关配置。本仓库只管理经过筛选的规则、skills 和安装元数据。Pi 和 DeepSeek Harness 安装脚本只安装工作流，不会增加沙箱或命令审批机制。
