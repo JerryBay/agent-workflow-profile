@@ -1,4 +1,4 @@
 interface:
   display_name: "Design-First Project Planning"
-  short_description: "Resolve requirements and acceptance before coding."
-  default_prompt: "Use $design-first-project-planning to discuss this feature first, maintain the decision log and acceptance criteria, and keep implementation blocked until the design is agreed."
+  short_description: "Confirm technical choices and boundaries before coding."
+  default_prompt: "Use $design-first-project-planning to present this feature's technical proposal, group open decisions for annotation, and wait for confirmation before implementation."

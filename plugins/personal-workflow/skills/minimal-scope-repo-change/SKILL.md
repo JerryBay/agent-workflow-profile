@@ -9,6 +9,14 @@ description: Use when modifying an existing repo, fixing a bug, adding a narrow 
 
 Make the smallest design-correct, repo-appropriate change that satisfies the request, then verify it with the project's real path. Smallest does not mean the fewest-line patch.
 
+## Before Editing
+
+After inspecting the relevant code, check whether the work is a complex feature or introduces material choices about ownership/interfaces, state/resource lifetimes, async/concurrency, persistence/export/reload, compatibility, performance-sensitive behavior, or user-visible edge cases. If so, use design-first-project-planning to present the technical proposal and obtain confirmation before implementation. A general feature request and a reversible patch do not bypass this gate. Do not implement or delegate unconfirmed choices while awaiting feedback.
+
+Retain the fast path for small, clear, localized, reversible changes without such impacts or unresolved technical choices. Routine wording or local display edits need only the final diff and the cheapest relevant check. Classify by behavior and risk, not lines changed; a one-line change to a lifetime or compatibility contract can still require confirmation.
+
+Once the proposal is confirmed, implement within it without repeatedly requesting approval. If new evidence exposes an important boundary decision or requires a material design change, pause the dependent work and present the choice and impact for confirmation; continue independent work already covered by the agreement.
+
 ## Workflow
 
 1. Establish the task mode, requirement boundary, and relevant acceptance level before editing.
@@ -58,4 +66,4 @@ Separate implemented, verified, and unverified work. If the full acceptance path
 
 Explain the problem, the key implementation choice and its reason, the resulting behavior change, and the supporting verification. For complex changes, point to a few code entrypoints that help a reviewer follow the logic. Keep simple changes to one or two sentences when sufficient.
 
-Apply these checks within the existing implementation and final-diff review. Preserve the low-risk fast path; do not add mandatory plans, documents, separate review stages, or broad test runs solely to satisfy these instructions.
+Apply these checks within the confirmed implementation and final-diff review. Preserve the low-risk fast path; the technical confirmation gate does not require long plans, extra review stages, or broad test runs for routine changes.

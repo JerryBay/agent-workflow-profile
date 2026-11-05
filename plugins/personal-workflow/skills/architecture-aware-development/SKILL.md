@@ -9,6 +9,14 @@ description: Use when designing or implementing a feature, subsystem, API, refac
 
 Choose the simplest design that satisfies current requirements while preserving cohesive ownership, clear dependency direction, appropriate data structures, and acceptable performance. Do not trade architecture away to stack features, and do not build abstractions for hypothetical futures.
 
+## Technical Confirmation
+
+For a complex feature or a material change to ownership/interfaces, state/resource lifetimes, concurrency, persistence/reload, compatibility, performance-sensitive behavior, or user-visible boundaries, use design-first-project-planning before implementation. An implementation request alone does not approve an undisclosed technical design. Read the current code first, then make the proposed execution flow and important decisions reviewable and obtain confirmation.
+
+In that proposal, explain relevant ownership and dependency direction, data and state transitions, creation/use/release and failure paths, compatibility behavior, and performance assumptions. Surface unresolved choices with alternatives, a recommended default, and concrete impact; internal analysis is not a substitute for the user reviewing those decisions.
+
+Reuse decisions already accepted. If new evidence requires a material departure from them, pause the affected implementation and return that decision for confirmation. Keep equivalent internal choices autonomous and preserve the low-risk fast path; merely touching an existing subsystem does not require redesign or approval.
+
 ## Workflow
 
 1. Establish the current and near-term requirements, constraints, expected scale, task boundary, and acceptance level.
